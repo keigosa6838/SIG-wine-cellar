@@ -1174,28 +1174,9 @@ async function runLabelRecognition(dataUrl){
   status.innerHTML = `<span class="spinner"></span> AI 辨識酒標中…`;
   zone.appendChild(status);
   try{
-    const base64 = dataUrl.split(',')[1];
-    const mediaType = dataUrl.match(/data:(.*?);base64/)[1];
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: '你是專業侍酒師。請辨識這張酒標照片，只回傳一個 JSON 物件，不要任何前後文字、不要 markdown 符號，格式為：{"producer":"酒莊/廠牌名稱","name":"酒款/產區全名，例如 Pauillac (Grand Cru Classé)","vintage":"四位數年份字串，看不出來則空字串","type":"red、white、rose、sparkling、sake 其中之一（清酒請填 sake）","region":"產區","country":"國家（用中文）"}。若無法辨識某欄位請填空字串，不要編造內容。只回傳純 JSON，不要其他文字。' }
-          ]
-        }]
-      })
-    });
-    const data = await resp.json();
-    const textBlock = (data.content || []).find(b => b.type === 'text');
-    if(!textBlock) throw new Error('no text');
-    let jsonStr = textBlock.text.trim().replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
-    const info = JSON.parse(jsonStr);
+    if(!API_URL) throw new Error('尚未連接同步後端');
+    const result = await apiPost({ type: 'recognize', dataUrl });
+    const info = result.data || {};
     if(info.producer) document.getElementById('f_producer').value = info.producer;
     if(info.name) document.getElementById('f_name').value = info.name;
     if(info.vintage) document.getElementById('f_vintage').value = info.vintage;
@@ -1204,7 +1185,7 @@ async function runLabelRecognition(dataUrl){
     if(info.country) document.getElementById('f_country').value = info.country;
     toast('已自動帶入辨識結果，請確認是否正確');
   }catch(err){
-    toast('AI 辨識失敗，請手動輸入資訊');
+    toast(API_URL ? ('AI 辨識失敗：' + err.message) : 'AI 辨識需要先完成同步設定，請手動輸入資訊');
   }finally{
     const s = document.getElementById('aiStatus');
     if(s) s.remove();
@@ -1306,6 +1287,10 @@ function openSettingsSheet(firstRun){
     <div class="divider-label">尚未部署試算表？</div>
     <p style="font-size:12.5px; color:var(--text-dim); line-height:1.7;">
       到 Google 試算表建立新表 → 擴充功能 → Apps Script → 貼上後端程式碼並部署為「網頁應用程式」（存取權設為「任何人」）→ 把 /exec 網址貼在上面。完整步驟我已經整理在對話裡了。
+    </p>
+    <div class="divider-label">AI 酒標辨識需要額外設定</div>
+    <p style="font-size:12.5px; color:var(--text-dim); line-height:1.7;">
+      拍照辨識酒標是透過你自己的 Anthropic API 金鑰運作（跟這支試算表分開設定）。到 Apps Script 編輯器「專案設定 → 指令碼屬性」新增一筆 <code>ANTHROPIC_API_KEY</code>，貼上你在 platform.claude.com 申請的金鑰即可。沒設定的話，其他功能都正常，只有 AI 辨識會失敗，仍可手動輸入資料。
     </p>
     ${API_URL ? '<button class="btn btn-outline danger btn-full" id="st_disconnect" style="margin-top:14px;">中斷連線（只留在此裝置）</button>' : ''}
   `;
