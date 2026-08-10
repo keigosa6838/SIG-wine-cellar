@@ -9,20 +9,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#151213;
-    --bg-2:#1b1516;
-    --wood:#2a201d;
-    --wood-2:#372a25;
-    --line: rgba(255,255,255,.07);
-    --text:#EDE3D6;
-    --text-dim:#A6968A;
-    --text-faint:#6E6259;
+    --bg:#FFFFFF;
+    --bg-2:#FBF8F4;
+    --wood:#F4EEE5;
+    --wood-2:#F7F1E8;
+    --line: rgba(30,22,16,.10);
+    --text:#2A211C;
+    --text-dim:#8A7B6E;
+    --text-faint:#B7AA9D;
     --wine:#7C1F2E;
     --wine-bright:#A9384A;
-    --gold:#C9A24B;
-    --gold-soft: rgba(201,162,75,.16);
+    --gold:#B8873A;
+    --gold-soft: rgba(184,135,58,.14);
     --danger:#B8473F;
-    --danger-soft: rgba(184,71,63,.14);
+    --danger-soft: rgba(184,71,63,.10);
     --radius-lg:22px;
     --radius-md:15px;
     --radius-sm:10px;
@@ -35,7 +35,7 @@
   html,body{margin:0; padding:0;}
   body{
     background:
-      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(124,31,46,.16), transparent 60%),
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(124,31,46,.06), transparent 60%),
       var(--bg);
     color:var(--text);
     font-family:var(--font-body);
@@ -55,7 +55,7 @@
   /* header */
   header.top{
     position:sticky; top:0; z-index:20;
-    background: linear-gradient(180deg, rgba(21,18,19,.97), rgba(21,18,19,.88) 70%, transparent);
+    background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(255,255,255,.88) 70%, transparent);
     backdrop-filter: blur(6px);
     padding: 18px 18px 8px;
   }
@@ -78,10 +78,23 @@
   }
   nav.tabs button.active{ color:var(--gold); border-bottom-color: var(--gold); }
 
+  .cellar-bar{ display:flex; align-items:center; gap:6px; padding: 12px 18px 2px; }
+  .cellar-chips{ display:flex; gap:8px; overflow-x:auto; flex:1; min-width:0; padding-bottom:2px; }
+  .cellar-chip{
+    flex:0 0 auto; padding:8px 15px; border-radius:20px; font-size:13.5px; font-weight:600;
+    border:1.5px solid var(--line); color:var(--text-dim); white-space:nowrap;
+  }
+  .cellar-chip.active{ background: var(--wine); border-color: var(--wine); color:#F6E4E6; }
+  .icon-btn{
+    flex:0 0 auto; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:14px; color:var(--text-dim); border:1px solid transparent;
+  }
+  .icon-btn:hover{ background: var(--gold-soft); color:var(--gold); }
+  .shelf-name-row{ display:flex; align-items:center; gap:4px; }
   .legend{ display:flex; gap:14px; flex-wrap:wrap; padding: 10px 18px 4px; font-size:11.5px; color:var(--text-dim); }
   .legend span{display:inline-flex; align-items:center; gap:5px;}
   .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
-  .dot.red{background:var(--wine-bright);} .dot.white{background:#CDB35C;} .dot.rose{background:#D6839A;} .dot.sparkling{background:#D9C36B;}
+  .dot.red{background:var(--wine-bright);} .dot.white{background:#CDB35C;} .dot.rose{background:#D6839A;} .dot.sparkling{background:#D9C36B;} .dot.sake{background:#B9C4C0;}
 
   main{ padding: 6px 18px 40px; }
 
@@ -100,7 +113,7 @@
     background: linear-gradient(180deg, var(--wood-2), var(--wood));
     border-radius: var(--radius-lg);
     padding: 18px 14px;
-    box-shadow: inset 0 2px 14px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.03);
+    box-shadow: inset 0 2px 10px rgba(40,28,16,.07), 0 1px 0 rgba(255,255,255,.6);
     display:flex; flex-direction:column; gap:7px;
     overflow-x:auto;
   }
@@ -114,13 +127,14 @@
     position:relative;
   }
   .slot:active{ transform: scale(.92); }
-  .slot.empty{ border:1.5px dashed rgba(255,255,255,.15); color:rgba(255,255,255,.22); }
+  .slot.empty{ border:1.5px dashed rgba(40,28,16,.18); color:rgba(40,28,16,.24); }
   .slot.empty:hover{ border-color: rgba(201,162,75,.4); color: rgba(201,162,75,.5); }
   .slot.filled{ box-shadow: inset 0 -3px 6px rgba(0,0,0,.28), inset 0 2px 3px rgba(255,255,255,.28); }
   .slot.type-red{ background: radial-gradient(circle at 35% 30%, var(--wine-bright), #611723 72%); color:#F5E2E5; }
   .slot.type-white{ background: radial-gradient(circle at 35% 30%, #F0E4AE, #CDB35C 72%); color:#3B2F12; }
   .slot.type-rose{ background: radial-gradient(circle at 35% 30%, #F3BEC9, #D6839A 72%); color:#4A1A28; }
   .slot.type-sparkling{ background: radial-gradient(circle at 35% 30%, #F5EBB4, #D9C36B 72%); color:#3B3312; }
+  .slot.type-sake{ background: radial-gradient(circle at 35% 30%, #EEF3F1, #C3CFCB 72%); color:#2C3A36; }
   .slot.selected{ box-shadow: 0 0 0 3px var(--gold), 0 0 20px 5px rgba(201,162,75,.5); }
   @media (prefers-reduced-motion: no-preference){
     .slot.selected{ animation: glow 2.4s ease-in-out infinite; }
@@ -161,7 +175,7 @@
     background: radial-gradient(circle at 35% 30%, var(--wine-bright), #5c1620 75%);
     color:#F5E2E5; font-size:26px; font-weight:400;
     display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 6px 20px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+    box-shadow: 0 8px 20px rgba(124,31,46,.28), 0 0 0 1px rgba(0,0,0,.04);
   }
   .fab:active{ transform: scale(.94); }
 
@@ -172,7 +186,7 @@
     position:fixed; left:0; right:0; bottom:0; z-index:41;
     background: linear-gradient(180deg, var(--wood-2), var(--bg-2));
     border-radius: 22px 22px 0 0;
-    border-top:1px solid rgba(255,255,255,.08);
+    border-top:1px solid rgba(40,28,16,.08);
     box-shadow: 0 -10px 40px rgba(0,0,0,.5);
     transform: translateY(105%);
     transition: transform .28s cubic-bezier(.32,.72,0,1);
@@ -180,7 +194,7 @@
     padding: 10px 20px 26px;
   }
   .sheet.open{ transform: translateY(0); }
-  .sheet .grabber{ width:38px; height:4px; border-radius:3px; background: rgba(255,255,255,.18); margin: 6px auto 14px; }
+  .sheet .grabber{ width:38px; height:4px; border-radius:3px; background: rgba(40,28,16,.16); margin: 6px auto 14px; }
   .sheet.wide{ max-height:92vh; }
 
   .bottle-card{ display:flex; gap:14px; align-items:flex-start; }
@@ -189,7 +203,7 @@
   .bottle-card .meta-sub{ font-family:var(--font-display); font-weight:600; font-size:16px; color:var(--gold); margin-top:1px; }
   .bottle-card .meta-line{ font-size:12.5px; color:var(--text-dim); margin-top:6px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
   .stars{ display:flex; gap:3px; margin-top:8px; }
-  .stars button{ font-size:17px; color: rgba(255,255,255,.2); line-height:1; }
+  .stars button{ font-size:17px; color: rgba(40,28,16,.16); line-height:1; }
   .stars button.on{ color: var(--gold); }
 
   .kv-row{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
@@ -201,7 +215,7 @@
 
   .btn{ padding:13px 14px; border-radius:var(--radius-md); font-size:14px; font-weight:600; text-align:center; letter-spacing:.01em; }
   .btn-primary{ background: linear-gradient(180deg, var(--wine-bright), var(--wine)); color:#F6E4E6; }
-  .btn-outline{ border:1.5px solid rgba(255,255,255,.16); color:var(--text); }
+  .btn-outline{ border:1.5px solid rgba(40,28,16,.18); color:var(--text); }
   .btn-outline.danger{ border-color: rgba(184,71,63,.5); color: var(--danger); }
   .btn-gold{ background: var(--gold); color:#241b08; }
   .btn-row{ display:flex; gap:10px; margin-top:16px; }
@@ -233,7 +247,7 @@
   .toast-wrap{ position:fixed; left:0; right:0; bottom:96px; display:flex; justify-content:center; z-index:60; pointer-events:none; }
   .toast{
     background: var(--wood-2); border:1px solid var(--line); color:var(--text); font-size:13.5px;
-    padding:10px 18px; border-radius:30px; box-shadow: 0 6px 20px rgba(0,0,0,.4);
+    padding:10px 18px; border-radius:30px; box-shadow: 0 6px 20px rgba(40,28,16,.18);
     opacity:0; transform: translateY(8px); transition: all .25s ease;
   }
   .toast.show{ opacity:1; transform:translateY(0); }
@@ -269,11 +283,18 @@
     <button data-tab="history">歷程記錄</button>
   </nav>
 </header>
+<div class="cellar-bar" id="cellarBar">
+  <div class="cellar-chips" id="cellarChips"></div>
+  <button class="icon-btn" id="cellarAddBtn" title="新增酒櫃" aria-label="新增酒櫃">＋</button>
+  <button class="icon-btn" id="cellarRenameBtn" title="重新命名目前酒櫃" aria-label="重新命名目前酒櫃">✏️</button>
+  <button class="icon-btn" id="cellarDeleteBtn" title="刪除目前酒櫃" aria-label="刪除目前酒櫃">🗑</button>
+</div>
 <div class="legend" id="legendRow">
   <span><i class="dot red"></i>紅酒</span>
   <span><i class="dot white"></i>白酒</span>
   <span><i class="dot rose"></i>粉紅酒</span>
   <span><i class="dot sparkling"></i>氣泡酒</span>
+  <span><i class="dot sake"></i>清酒</span>
 </div>
 
 <main id="mainArea"></main>
@@ -312,19 +333,26 @@
   <div id="settingsSheetContent"></div>
 </div>
 
+<!-- duplicate-from-existing picker sheet -->
+<div class="sheet wide" id="dupSheet">
+  <div class="grabber"></div>
+  <div id="dupSheetContent"></div>
+</div>
+
 <div class="toast-wrap"><div class="toast" id="toast"></div></div>
 
 <script>
 /* ---------------- constants ---------------- */
-const TYPE_LABEL = {red:'紅酒', white:'白酒', rose:'粉紅酒', sparkling:'氣泡酒'};
-const TYPE_ICON = {red:'🍷', white:'🥂', rose:'🌸', sparkling:'🍾'};
+const TYPE_LABEL = {red:'紅酒', white:'白酒', rose:'粉紅酒', sparkling:'氣泡酒', sake:'清酒'};
+const TYPE_ICON = {red:'🍷', white:'🥂', rose:'🌸', sparkling:'🍾', sake:'🍶'};
 const LOCAL_URL_KEY = 'cellarApiUrl';
 const LOCAL_CACHE_KEY = 'cellarLocalCache';
 
 /* ---------------- state ---------------- */
-let state = { shelves: [], bottles: {} };
+let state = { cellars: [], shelves: [], bottles: {} };
 let history = [];
 let currentTab = 'virtual';
+let currentCellarId = localStorage.getItem('cellarCurrentId') || null;
 let searchQuery = '';
 let photoCache = {}; // bottleId -> dataURL
 let pendingPhoto = null; // dataURL staged in add/edit form
@@ -374,6 +402,7 @@ function loadLocalCache(){
 async function loadAll(){
   if(!API_URL){
     loadLocalCache();
+    migrateState();
     setSyncDot('off');
     render();
     openSettingsSheet(true);
@@ -384,17 +413,43 @@ async function loadAll(){
     state = remoteState && remoteState.shelves ? remoteState : state;
     history = remoteHistory || [];
     setSyncDot('ok');
+    const migrated = migrateState();
     cacheLocally();
-    if(!state.shelves.length){
-      state = seedState();
-      await saveCellar();
-    }
+    if(migrated) await saveCellar();
   }catch(e){
     setSyncDot('bad');
     const hadCache = loadLocalCache();
+    migrateState();
     toast(hadCache ? '無法連線，先顯示上次同步的資料' : '無法連線到試算表，請檢查同步設定');
   }
   render();
+}
+/** Ensures at least one cellar exists and every shelf belongs to one. Returns true if it changed anything. */
+function migrateState(){
+  let changed = false;
+  if(!state.cellars) state.cellars = [];
+  if(!state.shelves) state.shelves = [];
+  if(!state.bottles) state.bottles = {};
+  const wasFreshEmpty = state.cellars.length === 0 && state.shelves.length === 0 && Object.keys(state.bottles).length === 0;
+  if(!state.cellars.length){
+    state.cellars.push(makeCellar('酒櫃 1'));
+    changed = true;
+  }
+  const validIds = new Set(state.cellars.map(c => c.id));
+  state.shelves.forEach(sh => {
+    if(!sh.cellarId || !validIds.has(sh.cellarId)){
+      sh.cellarId = state.cellars[0].id;
+      changed = true;
+    }
+  });
+  if(!currentCellarId || !validIds.has(currentCellarId)){
+    currentCellarId = state.cellars[0].id;
+  }
+  if(wasFreshEmpty){
+    state.shelves.push(makeShelf('酒架 1', 3, 6, state.cellars[0].id));
+    changed = true;
+  }
+  return changed;
 }
 async function saveCellar(){
   cacheLocally();
@@ -408,16 +463,18 @@ async function saveHistory(){
   try{ await apiPost({ type:'history', data: history }); }
   catch(e){ /* non-critical, state already reflects change locally */ }
 }
-function seedState(){
-  return { shelves: [ makeShelf('酒架 1', 3, 6) ], bottles: {} };
+function makeCellar(name){
+  return { id: 'c_' + Math.random().toString(36).slice(2,9), name };
 }
-function makeShelf(name, rows, cols){
+function makeShelf(name, rows, cols, cellarId){
   return {
     id: 's_' + Math.random().toString(36).slice(2,9),
-    name, rows, cols,
+    cellarId, name, rows, cols,
     slots: Array.from({length:rows}, () => Array.from({length:cols}, () => null))
   };
 }
+function currentCellar(){ return state.cellars.find(c => c.id === currentCellarId) || state.cellars[0]; }
+function shelvesInCurrentCellar(){ return state.shelves.filter(s => s.cellarId === currentCellarId); }
 async function getPhoto(id){
   if(photoCache[id] !== undefined) return photoCache[id];
   if(!API_URL){ photoCache[id] = null; return null; }
@@ -456,7 +513,7 @@ function toast(msg){
 }
 function computeStats(){
   let filled = 0, bottles = 0, empty = 0;
-  for(const sh of state.shelves){
+  for(const sh of shelvesInCurrentCellar()){
     for(const row of sh.slots){
       for(const cell of row){
         if(cell){ filled++; bottles += (state.bottles[cell.id]?.quantity || 1); }
@@ -466,13 +523,14 @@ function computeStats(){
   }
   return { filled, bottles, empty };
 }
-function allBottlesFlat(){
+function allBottlesFlat(scopeToCellar){
   const out = [];
-  for(const sh of state.shelves){
+  const shelves = scopeToCellar ? shelvesInCurrentCellar() : state.shelves;
+  for(const sh of shelves){
     sh.slots.forEach((row, r) => row.forEach((cell, c) => {
       if(cell){
         const b = state.bottles[cell.id];
-        if(b) out.push({ ...b, id: cell.id, shelfId: sh.id, shelfName: sh.name, r, c });
+        if(b) out.push({ ...b, id: cell.id, shelfId: sh.id, shelfName: sh.name, cellarId: sh.cellarId, r, c });
       }
     }));
   }
@@ -487,6 +545,8 @@ function render(){
   })();
   document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === currentTab));
   document.getElementById('legendRow').style.display = currentTab === 'virtual' ? 'flex' : 'none';
+  document.getElementById('cellarBar').style.display = currentTab === 'history' ? 'none' : 'flex';
+  renderCellarBar();
   const main = document.getElementById('mainArea');
   main.innerHTML = '';
   if(currentTab === 'virtual') renderVirtual(main);
@@ -494,18 +554,70 @@ function render(){
   else renderHistory(main);
 }
 
+function renderCellarBar(){
+  const chips = document.getElementById('cellarChips');
+  chips.innerHTML = '';
+  state.cellars.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cellar-chip' + (c.id === currentCellarId ? ' active' : '');
+    b.textContent = c.name;
+    b.onclick = () => {
+      currentCellarId = c.id;
+      localStorage.setItem('cellarCurrentId', c.id);
+      render();
+    };
+    chips.appendChild(b);
+  });
+}
+
+async function handleAddCellar(){
+  const name = prompt('酒櫃名稱', '酒櫃 ' + (state.cellars.length + 1));
+  if(!name || !name.trim()) return;
+  const c = makeCellar(name.trim());
+  state.cellars.push(c);
+  currentCellarId = c.id;
+  localStorage.setItem('cellarCurrentId', c.id);
+  await saveCellar();
+  render();
+  toast('已新增酒櫃');
+}
+async function handleRenameCellar(){
+  const c = currentCellar();
+  if(!c) return;
+  const name = prompt('酒櫃名稱', c.name);
+  if(!name || !name.trim()) return;
+  c.name = name.trim();
+  await saveCellar();
+  render();
+}
+async function handleDeleteCellar(){
+  const c = currentCellar();
+  if(!c) return;
+  if(state.cellars.length <= 1){ toast('至少需保留一個酒櫃'); return; }
+  const hasShelf = state.shelves.some(s => s.cellarId === c.id);
+  if(hasShelf){ toast('請先刪除這個酒櫃裡的所有酒架，才能刪除酒櫃'); return; }
+  if(!confirm('確定要刪除「' + c.name + '」嗎？此動作無法復原。')) return;
+  state.cellars = state.cellars.filter(x => x.id !== c.id);
+  currentCellarId = state.cellars[0].id;
+  localStorage.setItem('cellarCurrentId', currentCellarId);
+  await saveCellar();
+  render();
+  toast('已刪除酒櫃');
+}
+
 function renderVirtual(main){
-  if(!state.shelves.length){
+  const shelves = shelvesInCurrentCellar();
+  if(!shelves.length){
     main.innerHTML = `<div class="empty-state">
       <div class="glyph">🍷</div>
-      <h2>你的酒窖還是空的</h2>
+      <h2>${esc(currentCellar()?.name || '這個酒櫃')}還是空的</h2>
       <p>先建立一個酒架，再開始把酒瓶一支支放進去 —— 就像走進真正的地窖一樣。</p>
       <button class="btn btn-primary" id="emptyAddShelf">建立第一個酒架</button>
     </div>`;
     document.getElementById('emptyAddShelf').onclick = openAddShelfSheet;
     return;
   }
-  state.shelves.forEach(sh => {
+  shelves.forEach(sh => {
     const wrap = document.createElement('div');
     wrap.className = 'shelf';
     const filledCount = sh.slots.flat().filter(Boolean).length;
@@ -513,9 +625,28 @@ function renderVirtual(main){
     wrap.innerHTML = `
       <div class="shelf-head">
         <h3>${esc(sh.name)}</h3>
-        <span class="meta">${filledCount}/${total}</span>
+        <div style="display:flex; align-items:center; gap:2px;">
+          <span class="meta" style="margin-right:4px;">${filledCount}/${total}</span>
+          <button class="icon-btn" data-rename title="重新命名酒架">✏️</button>
+          <button class="icon-btn" data-delete title="刪除酒架">🗑</button>
+        </div>
       </div>
       <div class="rack"></div>`;
+    wrap.querySelector('[data-rename]').onclick = async () => {
+      const name = prompt('酒架名稱', sh.name);
+      if(!name || !name.trim()) return;
+      sh.name = name.trim();
+      await saveCellar();
+      render();
+    };
+    wrap.querySelector('[data-delete]').onclick = async () => {
+      if(filledCount > 0){ toast('請先清空這個酒架裡的酒，才能刪除'); return; }
+      if(!confirm('確定要刪除「' + sh.name + '」嗎？此動作無法復原。')) return;
+      state.shelves = state.shelves.filter(x => x.id !== sh.id);
+      await saveCellar();
+      render();
+      toast('已刪除酒架');
+    };
     const rack = wrap.querySelector('.rack');
     sh.slots.forEach((row, r) => {
       const rowEl = document.createElement('div');
@@ -548,7 +679,7 @@ function renderVirtual(main){
 }
 
 function renderList(main){
-  let items = allBottlesFlat();
+  let items = allBottlesFlat(true);
   if(searchQuery.trim()){
     const q = searchQuery.trim().toLowerCase();
     items = items.filter(b => [b.producer,b.name,b.vintage,b.region,b.country].join(' ').toLowerCase().includes(q));
@@ -557,7 +688,7 @@ function renderList(main){
     main.innerHTML = `<div class="empty-state">
       <div class="glyph">🔍</div>
       <h2>找不到符合的酒</h2>
-      <p>${state.shelves.length ? '試試別的關鍵字，或直接新增一支新的酒。' : '酒窖裡還沒有任何酒。'}</p>
+      <p>${shelvesInCurrentCellar().length ? '試試別的關鍵字，或直接新增一支新的酒。' : '這個酒櫃裡還沒有任何酒。'}</p>
     </div>`;
     return;
   }
@@ -601,7 +732,7 @@ function renderHistory(main){
     row.innerHTML = `
       <div class="info">
         <div class="name">${esc(h.producer||'未命名酒款')} ${esc(h.vintage||'')}</div>
-        <div class="sub">${esc(h.name||'')}${h.region ? ' · '+esc(h.region) : ''} · ${esc(h.date)}</div>
+        <div class="sub">${esc(h.name||'')}${h.region ? ' · '+esc(h.region) : ''} · ${esc(h.date)}${h.cellarName ? ' · '+esc(h.cellarName) : ''}</div>
       </div>
       <span class="badge ${h.reason==='drunk'?'drunk':'removed'}">${h.reason==='drunk' ? '喝掉' : '移除'}</span>`;
     list.appendChild(row);
@@ -686,7 +817,8 @@ function getShelfName(shelfId){ return state.shelves.find(s=>s.id===shelfId)?.na
 async function handleDrink(id, shelfId, r, c){
   const b = state.bottles[id];
   const shelf = state.shelves.find(s=>s.id===shelfId);
-  history.push({ producer:b.producer, name:b.name, vintage:b.vintage, region:b.region, date: todayStr(), reason:'drunk' });
+  const cellarName = state.cellars.find(x=>x.id===shelf?.cellarId)?.name || '';
+  history.push({ producer:b.producer, name:b.name, vintage:b.vintage, region:b.region, date: todayStr(), reason:'drunk', cellarName });
   if((b.quantity||1) > 1){
     b.quantity -= 1;
     toast('已喝掉 1 瓶，庫存更新');
@@ -704,7 +836,8 @@ async function handleDrink(id, shelfId, r, c){
 async function handleRemove(id, shelfId, r, c, reason){
   const b = state.bottles[id];
   const shelf = state.shelves.find(s=>s.id===shelfId);
-  history.push({ producer:b.producer, name:b.name, vintage:b.vintage, region:b.region, date: todayStr(), reason });
+  const cellarName = state.cellars.find(x=>x.id===shelf?.cellarId)?.name || '';
+  history.push({ producer:b.producer, name:b.name, vintage:b.vintage, region:b.region, date: todayStr(), reason, cellarName });
   shelf.slots[r][c] = null;
   delete state.bottles[id];
   await deletePhoto(id);
@@ -723,7 +856,7 @@ function openMoveSheet(id, fromShelfId, fromR, fromC){
   document.getElementById('moveClose').onclick = closeAllSheets;
   const wrap = document.getElementById('moveShelves');
   let any = false;
-  state.shelves.forEach(sh => {
+  shelvesInCurrentCellar().forEach(sh => {
     const hasEmpty = sh.slots.some(row => row.some(cell => !cell));
     if(!hasEmpty) return;
     any = true;
@@ -799,6 +932,7 @@ function renderFormSheet(){
         </div>
         <input type="file" id="photoInput" accept="image/*" capture="environment" />
       </div>
+      ${!editingId ? `<button class="btn btn-outline btn-full" id="dupOpenBtn" type="button" style="margin-bottom:16px;">🍷 從已加入的酒款帶入資訊（同款再一支）</button>` : ''}
 
       <div class="divider-label">基本資訊</div>
       <div class="field"><label>酒莊 / 品牌</label><input id="f_producer" placeholder="例如 Château Pontet-Canet" value="${esc(b.producer)}" /></div>
@@ -807,7 +941,7 @@ function renderFormSheet(){
         <div class="field"><label>年份</label><input id="f_vintage" placeholder="2021" value="${esc(b.vintage)}" /></div>
         <div class="field"><label>種類</label>
           <select id="f_type">
-            <option value="red">紅酒</option><option value="white">白酒</option><option value="rose">粉紅酒</option><option value="sparkling">氣泡酒</option>
+            <option value="red">紅酒</option><option value="white">白酒</option><option value="rose">粉紅酒</option><option value="sparkling">氣泡酒</option><option value="sake">清酒</option>
           </select>
         </div>
       </div>
@@ -854,10 +988,81 @@ function renderFormSheet(){
   document.getElementById('photoCaptureBtn').onclick = () => document.getElementById('photoInput').click();
   document.getElementById('photoClearBtn').onclick = () => { pendingPhoto = null; syncPhotoZone(); };
   document.getElementById('formSave').onclick = saveBottleForm;
+  const dupBtn = document.getElementById('dupOpenBtn');
+  if(dupBtn) dupBtn.onclick = openDuplicatePicker;
   if(editingId) document.getElementById('formDelete').onclick = () => {
     const ctx = targetSlot;
     handleRemove(editingId, ctx.shelfId, ctx.r, ctx.c, 'removed');
   };
+}
+
+/* ---------------- bring info in from an existing bottle ---------------- */
+function openDuplicatePicker(){
+  const content = document.getElementById('dupSheetContent');
+  content.innerHTML = `
+    <div class="modal-head"><h2>從已加入的酒款帶入</h2><button class="close-x" id="dupClose">✕</button></div>
+    <p style="font-size:12.5px; color:var(--text-dim); margin-top:0;">選一支，資料（含酒標照）會直接帶入下面的新增表單，你只要確認酒架位置就好。</p>
+    <div class="field"><input type="text" id="dupSearch" placeholder="搜尋酒莊、產區、年份…" /></div>
+    <div id="dupList"></div>
+  `;
+  document.getElementById('dupClose').onclick = () => {
+    document.getElementById('dupSheet').classList.remove('open');
+    if(!document.getElementById('formSheet').classList.contains('open')) document.getElementById('overlay').classList.remove('open');
+  };
+  const listEl = document.getElementById('dupList');
+  function draw(q){
+    let items = allBottlesFlat(false);
+    if(q && q.trim()){
+      const qq = q.trim().toLowerCase();
+      items = items.filter(b => [b.producer,b.name,b.vintage,b.region,b.country].join(' ').toLowerCase().includes(qq));
+    }
+    items.sort((a,b) => (a.producer||'').localeCompare(b.producer||''));
+    if(!items.length){
+      listEl.innerHTML = `<div class="slot-picker-empty">找不到符合的酒</div>`;
+      return;
+    }
+    listEl.innerHTML = '';
+    items.forEach(b => {
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      const cellarName = state.cellars.find(c => c.id === b.cellarId)?.name || '';
+      row.innerHTML = `
+        <div class="thumb" data-thumb="${b.id}">${TYPE_ICON[b.type]||'🍷'}</div>
+        <div class="info">
+          <div class="name">${esc(b.producer || '未命名酒款')}</div>
+          <div class="sub">${esc(b.vintage||'')} ${esc(b.name||'')}${b.region ? ' · '+esc(b.region) : ''}</div>
+        </div>
+        <div class="loc">${esc(cellarName)}<br/>${esc(b.shelfName)}</div>`;
+      row.onclick = () => applyDuplicate(b);
+      listEl.appendChild(row);
+      getPhoto(b.id).then(url => {
+        if(url){
+          const t = row.querySelector('[data-thumb]');
+          if(t) t.innerHTML = `<img src="${url}" alt="">`;
+        }
+      });
+    });
+  }
+  draw('');
+  document.getElementById('dupSearch').addEventListener('input', e => draw(e.target.value));
+  openSheet('dupSheet');
+}
+async function applyDuplicate(b){
+  document.getElementById('f_producer').value = b.producer || '';
+  document.getElementById('f_name').value = b.name || '';
+  document.getElementById('f_vintage').value = b.vintage || '';
+  document.getElementById('f_type').value = b.type || 'red';
+  document.getElementById('f_region').value = b.region || '';
+  document.getElementById('f_country').value = b.country || '';
+  document.getElementById('f_price').value = b.price ?? '';
+  document.getElementById('f_currency').value = b.currency || 'NT$';
+  document.getElementById('f_merchant').value = b.merchant || '';
+  document.getElementById('f_condition').value = b.condition || '';
+  document.getElementById('f_notes').value = b.notes || '';
+  document.getElementById('dupSheet').classList.remove('open');
+  const photo = await getPhoto(b.id);
+  if(photo){ pendingPhoto = photo; syncPhotoZone(); }
+  toast('已帶入「' + (b.producer||'未命名酒款') + '」的資訊，請確認酒架位置與數量');
 }
 
 function syncPhotoZone(){
@@ -891,14 +1096,15 @@ function renderSlotPicker(){
     document.getElementById('slotChangeBtn').onclick = () => { targetSlot = null; renderSlotPicker(); };
     return;
   }
-  // picker: choose first available empty slot per shelf, tap to pick
-  if(!state.shelves.length){
-    wrap.innerHTML = `<div class="slot-picker-empty">還沒有酒架，請先新增一個酒架。</div>`;
+  // picker: choose first available empty slot per shelf, tap to pick (current cellar only)
+  const shelvesHere = shelvesInCurrentCellar();
+  if(!shelvesHere.length){
+    wrap.innerHTML = `<div class="slot-picker-empty">這個酒櫃還沒有酒架，請先新增一個酒架。</div>`;
     return;
   }
   const picker = document.createElement('div');
   picker.className = 'slot-picker';
-  state.shelves.forEach(sh => {
+  shelvesHere.forEach(sh => {
     const hasEmpty = sh.slots.some(row => row.some(c => !c));
     const block = document.createElement('div');
     block.style.marginBottom = '14px';
@@ -980,7 +1186,7 @@ async function runLabelRecognition(dataUrl){
           role: 'user',
           content: [
             { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-            { type: 'text', text: '你是專業侍酒師。請辨識這張酒標照片，只回傳一個 JSON 物件，不要任何前後文字、不要 markdown 符號，格式為：{"producer":"酒莊/廠牌名稱","name":"酒款/產區全名，例如 Pauillac (Grand Cru Classé)","vintage":"四位數年份字串，看不出來則空字串","type":"red、white、rose、sparkling 其中之一","region":"產區","country":"國家（用中文）"}。若無法辨識某欄位請填空字串，不要編造內容。只回傳純 JSON，不要其他文字。' }
+            { type: 'text', text: '你是專業侍酒師。請辨識這張酒標照片，只回傳一個 JSON 物件，不要任何前後文字、不要 markdown 符號，格式為：{"producer":"酒莊/廠牌名稱","name":"酒款/產區全名，例如 Pauillac (Grand Cru Classé)","vintage":"四位數年份字串，看不出來則空字串","type":"red、white、rose、sparkling、sake 其中之一（清酒請填 sake）","region":"產區","country":"國家（用中文）"}。若無法辨識某欄位請填空字串，不要編造內容。只回傳純 JSON，不要其他文字。' }
           ]
         }]
       })
@@ -1006,8 +1212,7 @@ async function runLabelRecognition(dataUrl){
 }
 
 async function saveBottleForm(){
-  const producer = document.getElementById('f_producer').value.trim();
-  if(!producer){ toast('請至少填寫酒莊 / 品牌名稱'); return; }
+  const producer = document.getElementById('f_producer').value.trim() || '未命名酒款';
   if(!targetSlot){ toast('請選擇酒架位置'); return; }
 
   const payload = {
@@ -1047,10 +1252,12 @@ async function saveBottleForm(){
 
 /* ---------------- add shelf ---------------- */
 function openAddShelfSheet(){
+  const countHere = shelvesInCurrentCellar().length;
   const content = document.getElementById('shelfSheetContent');
   content.innerHTML = `
     <div class="modal-head"><h2>新增酒架</h2><button class="close-x" id="shelfClose">✕</button></div>
-    <div class="field"><label>名稱</label><input id="sh_name" value="酒架 ${state.shelves.length + 1}" /></div>
+    <p style="font-size:12.5px; color:var(--text-dim); margin-top:0;">將加入「${esc(currentCellar()?.name||'')}」</p>
+    <div class="field"><label>名稱</label><input id="sh_name" value="酒架 ${countHere + 1}" /></div>
     <div class="field-row">
       <div class="field"><label>排數</label><input id="sh_rows" type="number" min="1" max="8" value="3" /></div>
       <div class="field"><label>每排位數</label><input id="sh_cols" type="number" min="1" max="12" value="6" /></div>
@@ -1059,10 +1266,10 @@ function openAddShelfSheet(){
   `;
   document.getElementById('shelfClose').onclick = closeAllSheets;
   document.getElementById('shelfSave').onclick = async () => {
-    const name = document.getElementById('sh_name').value.trim() || ('酒架 ' + (state.shelves.length+1));
+    const name = document.getElementById('sh_name').value.trim() || ('酒架 ' + (countHere+1));
     const rows = Math.max(1, Math.min(8, parseInt(document.getElementById('sh_rows').value || '3', 10)));
     const cols = Math.max(1, Math.min(12, parseInt(document.getElementById('sh_cols').value || '6', 10)));
-    state.shelves.push(makeShelf(name, rows, cols));
+    state.shelves.push(makeShelf(name, rows, cols, currentCellarId));
     await saveCellar();
     closeAllSheets();
     toast('已新增酒架');
@@ -1078,7 +1285,7 @@ function openSheet(id){
 }
 function closeAllSheets(){
   document.getElementById('overlay').classList.remove('open');
-  ['bottleSheet','formSheet','shelfSheet','moveSheet','settingsSheet'].forEach(id => document.getElementById(id).classList.remove('open'));
+  ['bottleSheet','formSheet','shelfSheet','moveSheet','settingsSheet','dupSheet'].forEach(id => document.getElementById(id).classList.remove('open'));
   if(currentTab === 'virtual'){ openBottleCtx = null; render(); }
 }
 
@@ -1146,6 +1353,9 @@ document.getElementById('searchToggle').addEventListener('click', () => {
   if(wrap.classList.contains('open')) document.getElementById('searchInput').focus();
 });
 document.getElementById('settingsToggle').addEventListener('click', () => openSettingsSheet(false));
+document.getElementById('cellarAddBtn').addEventListener('click', handleAddCellar);
+document.getElementById('cellarRenameBtn').addEventListener('click', handleRenameCellar);
+document.getElementById('cellarDeleteBtn').addEventListener('click', handleDeleteCellar);
 document.getElementById('searchInput').addEventListener('input', e => {
   searchQuery = e.target.value;
   if(currentTab === 'list') render();
