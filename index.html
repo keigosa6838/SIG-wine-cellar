@@ -245,6 +245,12 @@
   .picked-note{ font-size:12.5px; color:var(--gold); margin-top:8px; }
 
   .toast-wrap{ position:fixed; left:0; right:0; bottom:96px; display:flex; justify-content:center; z-index:60; pointer-events:none; }
+  .photo-lightbox{
+    position:fixed; inset:0; z-index:90; background:rgba(10,7,5,.88);
+    display:flex; align-items:center; justify-content:center; padding:28px;
+  }
+  .photo-lightbox img{ max-width:100%; max-height:100%; border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,.5); }
+  .thumb.clickable{ cursor:pointer; }
   .toast{
     background: var(--wood-2); border:1px solid var(--line); color:var(--text); font-size:13.5px;
     padding:10px 18px; border-radius:30px; box-shadow: 0 6px 20px rgba(40,28,16,.18);
@@ -511,6 +517,27 @@ function toast(msg){
   clearTimeout(toast._t);
   toast._t = setTimeout(()=> el.classList.remove('show'), 2200);
 }
+/** Disables a button and shows a spinner + label while an async action runs. Returns a restore() function. */
+function busyButton(btn, label){
+  if(!btn || btn.disabled) return null;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  btn.style.opacity = '.65';
+  btn.innerHTML = `<span class="spinner" style="margin-right:6px; vertical-align:-2px;"></span>${label}`;
+  return function restore(){
+    btn.disabled = false;
+    btn.style.opacity = '';
+    btn.innerHTML = original;
+  };
+}
+function openPhotoLightbox(url){
+  if(!url) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'photo-lightbox';
+  overlay.innerHTML = `<img src="${url}" alt="酒標照片">`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+}
 function computeStats(){
   let filled = 0, bottles = 0, empty = 0;
   for(const sh of shelvesInCurrentCellar()){
@@ -709,7 +736,11 @@ function renderList(main){
     getPhoto(b.id).then(url => {
       if(url){
         const t = row.querySelector('[data-thumb]');
-        if(t) t.innerHTML = `<img src="${url}" alt="">`;
+        if(t){
+          t.innerHTML = `<img src="${url}" alt="">`;
+          t.classList.add('clickable');
+          t.onclick = (ev) => { ev.stopPropagation(); openPhotoLightbox(url); };
+        }
       }
     });
   });
@@ -799,14 +830,25 @@ async function openBottleSheet(id, shelfId, r, c){
   }
   // photo
   getPhoto(id).then(url => {
-    if(url){ document.getElementById('qvThumb').innerHTML = `<img src="${url}" alt="">`; }
+    if(url){
+      const t = document.getElementById('qvThumb');
+      t.innerHTML = `<img src="${url}" alt="">`;
+      t.classList.add('clickable');
+      t.onclick = () => openPhotoLightbox(url);
+    }
   });
   document.getElementById('qvMoreToggle').onclick = () => {
     document.getElementById('qvMorePanel').classList.toggle('open');
     document.getElementById('qvMoreArrow').textContent = document.getElementById('qvMorePanel').classList.contains('open') ? '▴' : '▾';
   };
-  document.getElementById('qvDrink').onclick = () => handleDrink(id, shelfId, r, c);
-  document.getElementById('qvRemove').onclick = () => handleRemove(id, shelfId, r, c, 'removed');
+  document.getElementById('qvDrink').onclick = (ev) => {
+    const restore = busyButton(ev.currentTarget, '處理中…');
+    handleDrink(id, shelfId, r, c).finally(() => { if(restore) restore(); });
+  };
+  document.getElementById('qvRemove').onclick = (ev) => {
+    const restore = busyButton(ev.currentTarget, '處理中…');
+    handleRemove(id, shelfId, r, c, 'removed').finally(() => { if(restore) restore(); });
+  };
   document.getElementById('qvMove').onclick = () => openMoveSheet(id, shelfId, r, c);
   document.getElementById('qvEdit').onclick = () => openEditBottleSheet(id, shelfId, r, c);
 
@@ -1195,6 +1237,9 @@ async function runLabelRecognition(dataUrl){
 async function saveBottleForm(){
   const producer = document.getElementById('f_producer').value.trim() || '未命名酒款';
   if(!targetSlot){ toast('請選擇酒架位置'); return; }
+  const saveBtn = document.getElementById('formSave');
+  const restore = busyButton(saveBtn, pendingPhoto ? '上傳照片並儲存中…' : '儲存中…');
+  if(!restore) return; // already in progress, ignore extra taps
 
   const payload = {
     producer,
