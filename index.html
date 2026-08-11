@@ -242,6 +242,16 @@
   .slot-picker{ border:1px solid var(--line); border-radius:var(--radius-md); padding:12px; }
   .slot-picker .rack{ padding:12px 10px; }
   .slot-picker-empty{ font-size:13px; color:var(--text-dim); text-align:center; padding:14px 0; }
+  .receipt-item{ border:1px solid var(--line); border-radius:var(--radius-md); padding:14px; margin-bottom:12px; }
+  .receipt-item.placed{ opacity:.5; }
+  .receipt-item .ri-title{ font-family:var(--font-display); font-weight:700; font-size:16px; }
+  .receipt-item .ri-sub{ font-size:12.5px; color:var(--text-dim); margin-top:2px; }
+  .receipt-item .ri-slot{ display:flex; align-items:center; gap:8px; margin-top:10px; font-size:12.5px; }
+  .receipt-item .ri-slot-tag{ padding:5px 11px; border-radius:20px; background:var(--gold-soft); color:var(--gold); font-weight:600; }
+  .receipt-item .ri-slot-tag.none{ background:var(--danger-soft); color:var(--danger); }
+  .receipt-item .ri-actions{ display:flex; gap:8px; margin-top:12px; }
+  .receipt-item .ri-actions .btn{ padding:9px 12px; font-size:13px; flex:1; }
+  .receipt-summary{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:13px; color:var(--text-dim); }
   .picked-note{ font-size:12.5px; color:var(--gold); margin-top:8px; }
 
   .toast-wrap{ position:fixed; left:0; right:0; bottom:96px; display:flex; justify-content:center; z-index:60; pointer-events:none; }
@@ -273,6 +283,9 @@
       <div class="stats" id="statsLine">— 支 · — 空位</div>
       <button class="search-btn" id="searchToggle" title="搜尋" aria-label="搜尋">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="search-btn" id="receiptToggle" title="掃描酒單/收據" aria-label="掃描酒單/收據">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 3h12v18l-2.5-1.5L13 21l-2.5-1.5L8 21l-2-1.5V3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       </button>
       <button class="search-btn" id="settingsToggle" title="同步設定" aria-label="同步設定" style="position:relative;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="2"/><path d="M19.4 13.5a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1 1.55V19.5a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.55-1H4.5a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H10a1.7 1.7 0 001-1.55V4.5a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V10a1.7 1.7 0 001.55 1h.09a2 2 0 110 4h-.09a1.7 1.7 0 00-1.55 1z" stroke="currentColor" stroke-width="1.6"/></svg>
@@ -345,6 +358,18 @@
   <div id="dupSheetContent"></div>
 </div>
 
+<!-- receipt / wine-list batch scan sheet -->
+<div class="sheet wide" id="receiptSheet">
+  <div class="grabber"></div>
+  <div id="receiptSheetContent"></div>
+</div>
+
+<!-- slot picker used when placing a receipt item -->
+<div class="sheet" id="receiptPickSheet">
+  <div class="grabber"></div>
+  <div id="receiptPickSheetContent"></div>
+</div>
+
 <div class="toast-wrap"><div class="toast" id="toast"></div></div>
 
 <script>
@@ -365,6 +390,8 @@ let pendingPhoto = null; // dataURL staged in add/edit form
 let editingId = null; // bottle id being edited, or null when creating
 let targetSlot = null; // {shelfId, r, c} chosen for new bottle
 let openBottleCtx = null; // {id, shelfId, r, c} currently open in quick view
+let receiptItems = []; // pending items parsed from a scanned receipt/wine list
+let receiptPendingPhoto = null;
 let API_URL = localStorage.getItem(LOCAL_URL_KEY) || '';
 let syncOk = false;
 
@@ -1107,6 +1134,232 @@ async function applyDuplicate(b){
   toast('已帶入「' + (b.producer||'未命名酒款') + '」的資訊，請確認酒架位置與數量');
 }
 
+/* ---------------- scan a receipt / wine list (batch add) ---------------- */
+function openReceiptSheet(){
+  receiptItems = [];
+  receiptPendingPhoto = null;
+  renderReceiptSheet();
+  openSheet('receiptSheet');
+}
+function renderReceiptSheet(){
+  const content = document.getElementById('receiptSheetContent');
+  content.innerHTML = `
+    <div class="modal-head"><h2>掃描酒單 / 收據</h2><button class="close-x" id="receiptClose">✕</button></div>
+    <p style="font-size:12.5px; color:var(--text-dim); margin-top:0;">拍下購買收據或酒單，AI 會整理成清單，並自動建議擺放的酒架位置（用「${esc(currentCellar()?.name||'')}」的空位），你可以逐支確認或調整位置後放入。</p>
+    <div class="photo-zone" id="receiptPhotoZone">
+      <div class="hint" id="receiptPhotoHint">拍照或上傳收據 / 酒單照片</div>
+      <div class="photo-actions">
+        <button class="btn btn-gold" id="receiptCaptureBtn" type="button">📷 拍照 / 上傳</button>
+      </div>
+      <input type="file" id="receiptPhotoInput" accept="image/*" capture="environment" />
+    </div>
+    <div id="receiptListWrap"></div>
+  `;
+  document.getElementById('receiptClose').onclick = closeAllSheets;
+  document.getElementById('receiptCaptureBtn').onclick = () => document.getElementById('receiptPhotoInput').click();
+  document.getElementById('receiptPhotoInput').onchange = handleReceiptPhotoInput;
+  renderReceiptList();
+}
+async function handleReceiptPhotoInput(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const dataUrl = await downscaleImage(file, 1500, 0.78);
+  receiptPendingPhoto = dataUrl;
+  const zone = document.getElementById('receiptPhotoZone');
+  const old = zone.querySelector('img');
+  if(old) old.remove();
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  zone.insertBefore(img, zone.firstChild);
+  document.getElementById('receiptPhotoHint').textContent = '辨識中，請稍候…';
+  const status = document.createElement('div');
+  status.className = 'ai-status';
+  status.id = 'receiptAiStatus';
+  status.innerHTML = `<span class="spinner"></span> AI 正在整理收據內容…`;
+  zone.appendChild(status);
+  try{
+    if(!API_URL) throw new Error('尚未連接同步後端');
+    const result = await apiPost({ type: 'recognizeReceipt', dataUrl });
+    const items = Array.isArray(result.data) ? result.data : [];
+    if(!items.length){ toast('沒有辨識到任何酒款，可以再試一張更清楚的照片'); }
+    receiptItems = items.map((it, i) => ({
+      tempId: 'ri_' + i,
+      producer: it.producer || '',
+      name: it.name || '',
+      vintage: it.vintage || '',
+      type: (it.type && TYPE_LABEL[it.type]) ? it.type : 'red',
+      region: it.region || '',
+      country: it.country || '',
+      price: it.price || '',
+      quantity: Math.max(1, parseInt(it.quantity || '1', 10) || 1),
+      manualSlot: null, slot: null, placed: false
+    }));
+    document.getElementById('receiptPhotoHint').textContent = '已辨識 ' + receiptItems.length + ' 支酒';
+    recomputeReceiptSlots();
+    renderReceiptList();
+  }catch(err){
+    toast(API_URL ? ('辨識失敗：' + err.message) : 'AI 辨識需要先完成同步設定');
+    document.getElementById('receiptPhotoHint').textContent = '拍照或上傳收據 / 酒單照片';
+  }finally{
+    const s = document.getElementById('receiptAiStatus');
+    if(s) s.remove();
+    e.target.value = '';
+  }
+}
+/** Greedily (re)assigns each not-yet-placed item to an empty slot in the current cellar, honoring any manual pick. */
+function recomputeReceiptSlots(){
+  const used = new Set();
+  shelvesInCurrentCellar().forEach(sh => {
+    sh.slots.forEach((row,r) => row.forEach((cell,c) => { if(cell) used.add(sh.id+':'+r+':'+c); }));
+  });
+  receiptItems.forEach(item => {
+    if(item.placed){ return; }
+    if(item.manualSlot){
+      const key = item.manualSlot.shelfId+':'+item.manualSlot.r+':'+item.manualSlot.c;
+      if(!used.has(key)){ item.slot = item.manualSlot; used.add(key); return; }
+      item.manualSlot = null; // no longer valid, fall through to auto-suggest
+    }
+    let found = null;
+    for(const sh of shelvesInCurrentCellar()){
+      for(let r=0; r<sh.rows && !found; r++){
+        for(let c=0; c<sh.cols && !found; c++){
+          const key = sh.id+':'+r+':'+c;
+          if(!used.has(key) && !sh.slots[r][c]) found = { shelfId: sh.id, r, c };
+        }
+      }
+      if(found) break;
+    }
+    item.slot = found;
+    if(found) used.add(found.shelfId+':'+found.r+':'+found.c);
+  });
+}
+function renderReceiptList(){
+  const wrap = document.getElementById('receiptListWrap');
+  if(!wrap) return;
+  if(!receiptItems.length){ wrap.innerHTML = ''; return; }
+  const pending = receiptItems.filter(it => !it.placed);
+  const placeableCount = pending.filter(it => it.slot).length;
+  wrap.innerHTML = `
+    <div class="receipt-summary">
+      <span>共 ${receiptItems.length} 支・已放入 ${receiptItems.length - pending.length} 支</span>
+      ${placeableCount > 0 ? `<button class="btn btn-gold" id="receiptPlaceAll" style="padding:8px 14px; font-size:13px;">全部放入建議位置（${placeableCount}）</button>` : ''}
+    </div>
+    <div id="receiptItemsList"></div>
+  `;
+  const listEl = document.getElementById('receiptItemsList');
+  receiptItems.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'receipt-item' + (item.placed ? ' placed' : '');
+    const slotLabel = item.slot ? (esc(getShelfName(item.slot.shelfId)) + ' · 第' + (item.slot.r+1) + '排 第' + (item.slot.c+1) + '位') : '沒有可用空位';
+    row.innerHTML = `
+      <div class="ri-title">${esc(item.producer || '未命名酒款')}${item.placed ? '　✓ 已放入' : ''}</div>
+      <div class="ri-sub">${esc(item.vintage||'')} ${esc(item.name||'')}${item.region ? ' · '+esc(item.region) : ''}${item.price ? ' · ' + esc(item.currency||'NT$') + ' ' + esc(String(item.price)) : ''}${item.quantity > 1 ? ' · 共 '+item.quantity+' 瓶' : ''}</div>
+      ${!item.placed ? `
+      <div class="ri-slot">
+        <span class="ri-slot-tag${item.slot ? '' : ' none'}" id="tag-${item.tempId}">${slotLabel}</span>
+        <button class="btn btn-outline" data-pick style="padding:6px 12px; font-size:12px;">選擇位置</button>
+      </div>
+      <div class="ri-actions">
+        <button class="btn btn-primary" data-place ${item.slot ? '' : 'disabled'}>放入酒窖</button>
+      </div>` : ''}
+    `;
+    if(!item.placed){
+      row.querySelector('[data-pick]').onclick = () => openReceiptSlotPicker(item);
+      row.querySelector('[data-place]').onclick = (ev) => commitReceiptItem(item, ev.currentTarget);
+    }
+    listEl.appendChild(row);
+  });
+  const placeAllBtn = document.getElementById('receiptPlaceAll');
+  if(placeAllBtn) placeAllBtn.onclick = (ev) => commitAllReceiptItems(ev.currentTarget);
+}
+function openReceiptSlotPicker(forItem){
+  const used = new Set();
+  shelvesInCurrentCellar().forEach(sh => sh.slots.forEach((row,r) => row.forEach((cell,c) => { if(cell) used.add(sh.id+':'+r+':'+c); })));
+  receiptItems.forEach(other => {
+    if(other === forItem || other.placed || !other.slot) return;
+    used.add(other.slot.shelfId+':'+other.slot.r+':'+other.slot.c);
+  });
+  const content = document.getElementById('receiptPickSheetContent');
+  content.innerHTML = `<div class="modal-head"><h2>選擇位置</h2><button class="close-x" id="rpClose">✕</button></div>
+    <p style="font-size:12.5px; color:var(--text-dim); margin-top:0;">「${esc(forItem.producer||'未命名酒款')}」${esc(forItem.vintage||'')}</p>
+    <div id="rpShelves"></div>`;
+  document.getElementById('rpClose').onclick = () => document.getElementById('receiptPickSheet').classList.remove('open');
+  const wrap = document.getElementById('rpShelves');
+  const shelves = shelvesInCurrentCellar();
+  if(!shelves.length){ wrap.innerHTML = '<div class="slot-picker-empty">這個酒櫃還沒有酒架。</div>'; }
+  shelves.forEach(sh => {
+    const block = document.createElement('div');
+    block.style.marginBottom = '18px';
+    block.innerHTML = `<div class="shelf-head" style="margin-bottom:8px;"><h3 style="font-size:16px;">${esc(sh.name)}</h3></div><div class="rack"></div>`;
+    const rack = block.querySelector('.rack');
+    sh.slots.forEach((row, r) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'rack-row' + (r % 2 === 1 ? ' offset' : '');
+      row.forEach((cell, c) => {
+        const key = sh.id+':'+r+':'+c;
+        const s = document.createElement('button');
+        if(cell || used.has(key)){
+          if(cell){
+            const bb = state.bottles[cell.id];
+            s.className = 'slot filled type-' + (bb?.type||'red');
+            s.textContent = bb?.vintage || '';
+          }else{
+            s.className = 'slot filled type-sake';
+            s.textContent = '待放';
+          }
+          s.disabled = true; s.style.opacity = .35;
+        }else{
+          s.className = 'slot empty';
+          s.onclick = () => {
+            forItem.manualSlot = { shelfId: sh.id, r, c };
+            recomputeReceiptSlots();
+            renderReceiptList();
+            document.getElementById('receiptPickSheet').classList.remove('open');
+          };
+        }
+        rowEl.appendChild(s);
+      });
+      rack.appendChild(rowEl);
+    });
+    wrap.appendChild(block);
+  });
+  openSheet('receiptPickSheet');
+}
+function placeReceiptItemLocally(item){
+  const id = uid();
+  state.bottles[id] = {
+    producer: item.producer || '未命名酒款', name: item.name || '', vintage: item.vintage || '',
+    type: item.type || 'red', region: item.region || '', country: item.country || '',
+    price: item.price || '', currency: 'NT$', purchaseDate: todayStr(), quantity: item.quantity || 1,
+    merchant: '', condition: '', notes: '', rating: 0
+  };
+  const shelf = state.shelves.find(s => s.id === item.slot.shelfId);
+  shelf.slots[item.slot.r][item.slot.c] = { id };
+  item.placed = true;
+}
+async function commitReceiptItem(item, btn){
+  if(!item.slot) return;
+  const restore = busyButton(btn, '放入中…');
+  if(!restore) return;
+  placeReceiptItemLocally(item);
+  recomputeReceiptSlots();
+  await saveCellar();
+  toast('已放入「' + (item.producer||'未命名酒款') + '」');
+  renderReceiptList();
+  render();
+}
+async function commitAllReceiptItems(btn){
+  const restore = busyButton(btn, '放入中…');
+  if(!restore) return;
+  const targets = receiptItems.filter(it => !it.placed && it.slot);
+  targets.forEach(it => placeReceiptItemLocally(it));
+  recomputeReceiptSlots();
+  await saveCellar();
+  toast('已放入 ' + targets.length + ' 支酒');
+  renderReceiptList();
+  render();
+}
+
 function syncPhotoZone(){
   const zone = document.getElementById('photoZone');
   if(!zone) return;
@@ -1311,7 +1564,7 @@ function openSheet(id){
 }
 function closeAllSheets(){
   document.getElementById('overlay').classList.remove('open');
-  ['bottleSheet','formSheet','shelfSheet','moveSheet','settingsSheet','dupSheet'].forEach(id => document.getElementById(id).classList.remove('open'));
+  ['bottleSheet','formSheet','shelfSheet','moveSheet','settingsSheet','dupSheet','receiptSheet','receiptPickSheet'].forEach(id => document.getElementById(id).classList.remove('open'));
   if(currentTab === 'virtual'){ openBottleCtx = null; render(); }
 }
 
@@ -1383,6 +1636,7 @@ document.getElementById('searchToggle').addEventListener('click', () => {
   if(wrap.classList.contains('open')) document.getElementById('searchInput').focus();
 });
 document.getElementById('settingsToggle').addEventListener('click', () => openSettingsSheet(false));
+document.getElementById('receiptToggle').addEventListener('click', openReceiptSheet);
 document.getElementById('cellarAddBtn').addEventListener('click', handleAddCellar);
 document.getElementById('cellarRenameBtn').addEventListener('click', handleRenameCellar);
 document.getElementById('cellarDeleteBtn').addEventListener('click', handleDeleteCellar);
